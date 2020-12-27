@@ -1,23 +1,3 @@
-/*
- * This file is part of MinimalGS, which is a GameScript for OpenTTD
- * Copyright (C) 2012-2013  Leif Linse
- *
- * MinimalGS is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 of the License
- *
- * MinimalGS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with MinimalGS; If not, see <http://www.gnu.org/licenses/> or
- * write to the Free Software Foundation, Inc., 51 Franklin Street, 
- * Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
-
 /** Import SuperLib for GameScript **/
 import("util.superlib", "SuperLib", 36);
 Result <- SuperLib.Result;
@@ -46,7 +26,7 @@ require("version.nut"); // get SELF_VERSION
 //..
 
 
-class MainClass extends GSController 
+class MainClass extends GSController
 {
 	_loaded_data = null;
 	_loaded_from_version = null;
@@ -79,8 +59,8 @@ function MainClass::Start()
 {
 	// Some OpenTTD versions are affected by a bug where all API methods
 	// that create things in the game world during world generation will
-	// return object id 0 even if the created object has a different ID. 
-	// In that case, the easiest workaround is to delay Init until the 
+	// return object id 0 even if the created object has a different ID.
+	// In that case, the easiest workaround is to delay Init until the
 	// game has started.
 	if (Helper.HasWorldGenBug()) GSController.Sleep(1);
 
@@ -114,7 +94,7 @@ function MainClass::Start()
 			}
 		}
 		last_loop_date = current_date;
-	
+
 		// Loop with a frequency of five days
 		local ticks_used = GSController.GetTick() - loop_start_tick;
 		GSController.Sleep(max(1, 5 * 74 - ticks_used));
@@ -198,7 +178,7 @@ function MainClass::Save()
 		return this._loaded_data != null ? this._loaded_data : {};
 	}
 
-	return { 
+	return {
 		some_data = null,
 		//some_other_data = this._some_variable,
 	};
