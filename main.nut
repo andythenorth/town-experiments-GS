@@ -118,6 +118,94 @@ function MainClass::Init()
 		// construct goals etc.
 	}
 
+    Log.Info(typeof(GSNewGRFList()), Log.LVL_INFO);
+
+    GSLog.Info("GSNewGRFList()...");
+    local grf_list = GSNewGRFList();
+    grf_list.Sort(GSList.SORT_BY_VALUE, true);
+    foreach (grf, _ in grf_list) {
+    //for (local i = grf_list.Begin(); !grf_list.IsEnd(); i = grf_list.Next()) {
+        //Log.Info(i, Log.LVL_INFO);
+        Log.Info(grf, Log.LVL_INFO);
+        Log.Info(_, Log.LVL_INFO);
+    }
+
+    GSLog.Info("GSNewGRF.IsLoaded(0x80025f1)...");
+    if (GSNewGRF.IsLoaded(0xf1250008)) {
+        Log.Info(GSNewGRF.IsLoaded(0xf1250008), Log.LVL_INFO);
+        Log.Info(GSNewGRF.GetVersion(0xf1250008), Log.LVL_INFO);
+        Log.Info(GSNewGRF.GetName(0xf1250008), Log.LVL_INFO);
+        /*
+        Log.Info("Industry count..");
+        local industry_list = GSIndustryList();
+        Log.Info(industry_list.Count(), Log.LVL_INFO);
+        foreach (industry, _ in industry_list) {
+            Log.Info(GSIndustry.GetIndustryType(industry), Log.LVL_INFO);
+            Log.Info(GSIndustry.GetName(industry), Log.LVL_INFO);
+        }
+        */
+        Log.Info("get all tiles, start tick:" + GSController.GetTick(), Log.LVL_INFO);
+        local all_map_tiles = GSTileList();
+        all_map_tiles.AddRectangle(0, GSMap.GetMapSize() -1);
+        Log.Info("all_map_tiles length: " + all_map_tiles.Count(), Log.LVL_INFO);
+        local tiles_grouped_by_town = {};
+        foreach (town, _ in GSTownList()) {
+            tiles_grouped_by_town[town] <- [];
+        }
+        for (local tile = 0; tile < GSMap.GetMapSize(); tile++) {
+            if (GSMap.IsValidTile(tile)) {
+                local tile_town = GSTile.GetClosestTown(tile);
+                tiles_grouped_by_town[tile_town].append(tile);
+            }
+        }
+        Log.Info("get all tiles, end tick:" + GSController.GetTick(), Log.LVL_INFO);
+        local towns_with_info_industry = GSList();
+        foreach (industry, _ in GSIndustryList()) {
+            if (GSIndustry.GetIndustryType(industry) == 2) {
+                Log.Info(GSIndustry.GetName(industry), Log.LVL_INFO);
+                Log.Info(GSIndustry.GetIndustryType(industry), Log.LVL_INFO);
+                local town = GetIndustryTown(industry);
+                towns_with_info_industry.AddItem(town, 0);
+            }
+        }
+        foreach (town, _ in GSTownList()) {
+            if (towns_with_info_industry.HasItem(town) == false) {
+                local town_name = GSTown.GetName(town);
+                Log.Info(town_name, Log.LVL_INFO);
+                foreach (tile in tiles_grouped_by_town[town]) {
+                    local result = GSIndustryType.BuildIndustry(2, tile);
+                    if (result == true) {
+                        Log.Info("...built industry", Log.LVL_INFO);
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+    foreach (industry, _ in industry_list) {
+        Log.Info(GSIndustry.GetIndustryType(industry), Log.LVL_INFO);
+        Log.Info(GSIndustry.GetName(industry), Log.LVL_INFO);
+    }
+    */
+    /*
+    local counter = 0;
+    foreach (town, _ in GSTownList()) {
+        counter++;
+        local town_name = GSTown.GetName(town);
+        local new_name = "CABBAGE " + counter;
+        if (GSTown.SetName(town, new_name) == true) {
+            Log.Info(town_name + " renamed to " + new_name, Log.LVL_INFO);
+        } else {
+            Log.Info(town_name + " failed to rename to " + new_name, Log.LVL_INFO);
+        }
+    }
+    foreach (cargo, _ in GSCargoList()) {
+        if (GSCargo.GetTownEffect(cargo) != 0) {
+            Log.Info(GSCargo.GetCargoLabel(cargo) + ": " + GSCargo.GetTownEffect(cargo), Log.LVL_INFO);
+        }
+    }
+    */
 	// Indicate that all data structures has been initialized/restored.
 	this._init_done = true;
 	this._loaded_data = null; // the loaded data has no more use now after that _init_done is true.
@@ -153,6 +241,17 @@ function MainClass::HandleEvents()
  */
 function MainClass::EndOfMonth()
 {
+    // Fuck about with vehicles
+    local vehicle_list = GSVehicleList();
+    Log.Info("Vehicle count..");
+    Log.Info(vehicle_list.Count());
+    foreach (vehicle, _ in vehicle_list) {
+        Log.Info("Start/stop vehicle:" + GSVehicle.GetName(vehicle));
+        local company = GSCompanyMode(GSVehicle.GetOwner(vehicle));
+        Log.Info(GSVehicle.IsValidVehicle(vehicle));
+        GSVehicle.StartStopVehicle(vehicle);
+    }
+
 }
 
 /*
@@ -201,4 +300,11 @@ function MainClass::Load(version, tbl)
 	}
 
 	this._loaded_from_version = version;
+}
+
+function MainClass::GetIndustryTown(industry)
+{
+	local tile = GSIndustry.GetLocation(industry);
+	local town = GSTile.GetClosestTown(tile);
+	return town;
 }
