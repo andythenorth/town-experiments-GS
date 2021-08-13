@@ -176,6 +176,7 @@ function MainClass::Init()
                     local result = GSIndustryType.BuildIndustry(2, tile);
                     if (result == true) {
                         Log.Info("...built industry", Log.LVL_INFO);
+                        break;
                     }
                 }
             }
